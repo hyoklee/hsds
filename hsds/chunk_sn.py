@@ -285,8 +285,16 @@ async def getChunkLocations(
                     raise HTTPBadRequest(reason=msg)
                 e = item[2]
                 if e:
-                    s3path = e.decode("utf-8")
+                    if isinstance(e, str):
+                        s3path = e
+                    elif isinstance(e, bytes):
+                        s3path = e.decode("utf-8")
+                    else:
+                        log.wwarn(f"Unexpected H5D_CHUNKED_REF_INDIRECT path: {e}")
+                        raise HTTPBadRequest()
                     log.debug(f"got s3path: {s3path}")
+                else:
+                    s3path = None
             else:
                 s3path = s3_layout_path
             chunk_item = getChunkItem(chunk_id)
